@@ -9,40 +9,53 @@ import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import com.felipysantsss.telegram_amara_bot.texts.Messages;
+
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
+
+    // pega o token do bot nas variaveis de ambiente
     @Value("${telegram.bot.token}")
     private String botToken;
-    private TelegramClient telegramClient;
-    String firstMessage = "Oii... cuidado pra não se perder aqui comigo \uD83D\uDE08\n" +
-            "\n" +
-            "Eu sou a Amara Eyess, 20 aninhos... \n" +
-            "loira, branquinha, carinhosa e toda safada \uD83E\uDEE3\n" +
-            "Pareço só uma menina doce e educada...\n" +
-            "mas quando a gente fica sozinho eu viro a putinha que obedece tudo o que você mandar \uD83D\uDD25\n" +
-            "\n" +
-            "\uD83D\uDC40 olha o que te espera no meu VIP.\n" +
-            "\n" +
-            "❤\uFE0F\u200D\uD83D\uDD25 Fotos de lingerie sexy \n" +
-            "❤\uFE0F\u200D\uD83D\uDD25Fotinhas nuas no SAFADO+\n" +
-            "❤\uFE0F\u200D\uD83D\uDD25 Vídeos exclusivos só pro VIP\n" +
-            "\n" +
-            "Aqui dentro...\n" +
-            "ninguém vê... ninguém ouve... e eu viro a puta tarada que você merece \uD83D\uDCA6\n" +
-            "\n" +
-            "Você aguenta entrar nesse jogo comigo?\n" +
-            "\n" +
-            "VEM PRO MEU CANTINHO \uD83D\uDE0F\uD83D\uDCA6\n" +
-            "\n" +
-            "*\uD83C\uDF38 7 dias- FOTOS SEXY DE LINGERIE \uD83D\uDD1E por R$ 10.90*\n" +
-            "\n" +
-            "*\uD83D\uDC8E SAFADO 30 dias + SURPRESINHA \uD83C\uDF81 por R$ 24.90*\n" +
-            "\n" +
-            "*\uD83D\uDC51 VIP+ VÍDEOS EXCLUSIVOS por R$ 50.90*";
 
+    // cria o cliente do telegram que enviará as mensagens
+    private TelegramClient telegramClient;
+
+    String firstMessage = Messages.START_MESSAGE.getText();
+
+    InlineKeyboardButton button7Dias = InlineKeyboardButton.builder()
+            .text("\uD83C\uDF38 INTERESSADO Por R$10.90 (7 dias) - LINGERIE \uD83D\uDD1E")
+            .callbackData("7dias_plan")
+            .build();
+
+    InlineKeyboardButton button30DiasSafado = InlineKeyboardButton.builder()
+            .text("\uD83D\uDC8E SAFADO por R$ 24.90* (30 dias) + SURPRESINHA \uD83C\uDF81")
+            .callbackData("30dias-safado-plan")
+            .build();
+
+    InlineKeyboardButton button30DiasVip = InlineKeyboardButton.builder()
+            .text("\uD83D\uDC51 VIP+ por R$ 50.90 (45 dias) - VÍDEOS EXCLUSIVOS")
+            .callbackData("30dias-vip-plan")
+            .build();
+
+    InlineKeyboardRow row1 = new InlineKeyboardRow(List.of(button7Dias));
+    InlineKeyboardRow row2 = new InlineKeyboardRow(List.of(button30DiasSafado));
+    InlineKeyboardRow row3 = new InlineKeyboardRow(List.of(button30DiasVip));
+
+    List<InlineKeyboardRow> listButtons = new ArrayList(List.of(row1, row2, row3));
+
+    InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup(listButtons);
+
+    // Pega o token do bot
     @Override
     public String getBotToken() {
         return botToken;
@@ -53,12 +66,19 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
         return this;
     }
 
+    // Recebe os updates(mensagens ou qualquer coisa que venha do user no telegram)
     @Override
     public void consume(Update update) {
+        // verifica se tem mensagem
         if (update.hasMessage()){
+            // verifica se a mensagem é "/start"
             if ("/start".equals(update.getMessage().getText())){
+                // Cria o objeto SendMessage que pega o Id do chat e a Mensagem que será enviada
                 SendMessage messageInit = new SendMessage(update.getMessage().getChat().getId().toString(), firstMessage);
+                // coloca os botões na mensagem
+                messageInit.setReplyMarkup(keyboardMarkup);
                 try {
+                    // envia a mensagem com os botões
                     telegramClient.execute(messageInit);
                 } catch (TelegramApiException e){
                     System.out.println(e.getMessage());
@@ -67,6 +87,7 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
         }
     }
 
+    // transforma o cliente do telegram com base no token do bot
     @PostConstruct
     public void init(){
         telegramClient = new OkHttpTelegramClient(botToken);
