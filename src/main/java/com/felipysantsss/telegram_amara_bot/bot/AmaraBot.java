@@ -1,5 +1,6 @@
 package com.felipysantsss.telegram_amara_bot.bot;
 
+import com.felipysantsss.telegram_amara_bot.utils.PhotoSender;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -73,11 +74,15 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
         if (update.hasMessage()){
             // verifica se a mensagem é "/start"
             if ("/start".equals(update.getMessage().getText())){
+                String chatId = update.getMessage().getChat().getId().toString();
                 // Cria o objeto SendMessage que pega o Id do chat e a Mensagem que será enviada
-                SendMessage messageInit = new SendMessage(update.getMessage().getChat().getId().toString(), firstMessage);
+                SendMessage messageInit = new SendMessage(chatId, firstMessage);
                 // coloca os botões na mensagem
                 messageInit.setReplyMarkup(keyboardMarkup);
                 try {
+                    PhotoSender.sendImage(chatId, "https://pub-29c79b56b9f44c2a80b005bc022bef94.r2.dev/amara/amara-profile2.jpeg", telegramClient);
+                    PhotoSender.sendImage(chatId, "https://pub-29c79b56b9f44c2a80b005bc022bef94.r2.dev/amara/amara-profile.jpeg", telegramClient);
+                    PhotoSender.sendImage(chatId, "https://pub-29c79b56b9f44c2a80b005bc022bef94.r2.dev/amara/amara-banner.jpeg", telegramClient);
                     // envia a mensagem com os botões
                     telegramClient.execute(messageInit);
                 } catch (TelegramApiException e){
