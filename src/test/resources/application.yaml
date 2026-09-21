@@ -1,0 +1,3 @@
+spring:
+  application:
+    name: telegram_amara_bot
