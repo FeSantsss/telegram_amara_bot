@@ -1,5 +1,7 @@
 package com.felipysantsss.telegram_amara_bot.bot;
 
+import com.felipysantsss.telegram_amara_bot.Utils.MessageSender;
+import com.felipysantsss.telegram_amara_bot.texts.Plans;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -7,6 +9,7 @@ import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -33,18 +36,18 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
     String firstMessage = Messages.START_MESSAGE.getText();
 
     InlineKeyboardButton button7Dias = InlineKeyboardButton.builder()
-            .text("\uD83C\uDF38 INTERESSADO Por R$10.90 (7 dias) - LINGERIE \uD83D\uDD1E")
-            .callbackData("7dias_plan")
+            .text(Plans.INTERESSADO_PLAN.getText())
+            .callbackData(Plans.INTERESSADO_PLAN.getCallBack())
             .build();
 
     InlineKeyboardButton button30DiasSafado = InlineKeyboardButton.builder()
-            .text("\uD83D\uDC8E SAFADO por R$ 24.90* (30 dias) + SURPRESINHA \uD83C\uDF81")
-            .callbackData("30dias_safado_plan")
+            .text(Plans.SAFADO_PLAN.getText())
+            .callbackData(Plans.SAFADO_PLAN.getCallBack())
             .build();
 
     InlineKeyboardButton button30DiasVip = InlineKeyboardButton.builder()
-            .text("\uD83D\uDC51 VIP+ por R$ 50.90 (45 dias) - VÍDEOS EXCLUSIVOS")
-            .callbackData("30dias_vip_plan")
+            .text(Plans.VIP_PLAN.getText())
+            .callbackData(Plans.VIP_PLAN.getCallBack())
             .build();
 
     InlineKeyboardRow row1 = new InlineKeyboardRow(List.of(button7Dias));
@@ -87,12 +90,32 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
             }
         }
         if (update.hasCallbackQuery()){
-            if ("7dias_plan".equals(update.getCallbackQuery().getData())){
-                SendMessage message = new SendMessage(update.getCallbackQuery().getFrom().getId().toString(), "oi, teste gostoso");
-                try {
-                    telegramClient.execute(message);
-                } catch (TelegramApiException e){
-                    System.out.println(e.getMessage());
+            String chatId = update.getCallbackQuery().getFrom().getId().toString();
+
+            AnswerCallbackQuery response =  new AnswerCallbackQuery(update.getCallbackQuery().getId());
+
+            try {
+                telegramClient.execute(response);
+            } catch (TelegramApiException e){
+                System.out.println(e.getMessage());
+            }
+
+            String textInteressado = "teste do INTERESSADO";
+            String textSafado = "teste do SAFADO";
+            String textVip = "teste do VIP";
+
+            switch (update.getCallbackQuery().getData()){
+                case "7days_plan" -> {
+                    MessageSender.MessageSender(chatId, textInteressado, telegramClient);
+                }
+                case "30days_safado_plan" -> {
+                    MessageSender.MessageSender(chatId, textSafado, telegramClient);
+                }
+                case "45days_vip_plan" -> {
+                    MessageSender.MessageSender(chatId, textVip, telegramClient);
+                }
+                default -> {
+                    System.out.println("Enter a valid value!");
                 }
             }
         }
