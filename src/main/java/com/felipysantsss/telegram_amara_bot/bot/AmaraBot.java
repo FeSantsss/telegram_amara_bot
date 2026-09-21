@@ -40,12 +40,12 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
 
     InlineKeyboardButton button30DiasSafado = InlineKeyboardButton.builder()
             .text("\uD83D\uDC8E SAFADO por R$ 24.90* (30 dias) + SURPRESINHA \uD83C\uDF81")
-            .callbackData("30dias-safado-plan")
+            .callbackData("30dias_safado_plan")
             .build();
 
     InlineKeyboardButton button30DiasVip = InlineKeyboardButton.builder()
             .text("\uD83D\uDC51 VIP+ por R$ 50.90 (45 dias) - VÍDEOS EXCLUSIVOS")
-            .callbackData("30dias-vip-plan")
+            .callbackData("30dias_vip_plan")
             .build();
 
     InlineKeyboardRow row1 = new InlineKeyboardRow(List.of(button7Dias));
@@ -70,8 +70,9 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
     // Recebe os updates(mensagens ou qualquer coisa que venha do user no telegram)
     @Override
     public void consume(Update update) {
-        // verifica se tem mensagem
-        if (update.hasMessage()){
+
+        // verifica se tem mensagem de texto
+        if (update.hasMessage() && update.getMessage().hasText()){
             // verifica se a mensagem é "/start"
             if ("/start".equals(update.getMessage().getText())){
                 String chatId = update.getMessage().getChat().getId().toString();
@@ -90,6 +91,18 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
                 }
             }
         }
+        if (update.hasCallbackQuery()){
+            if ("7dias_plan".equals(update.getCallbackQuery().getData())){
+                SendMessage message = new SendMessage(update.getCallbackQuery().getFrom().getId().toString(), "oi, teste gostoso");
+                try {
+                    telegramClient.execute(message);
+                } catch (TelegramApiException e){
+                    System.out.println(e.getMessage());
+                }
+            }
+        }
+
+
     }
 
     // transforma o cliente do telegram com base no token do bot
