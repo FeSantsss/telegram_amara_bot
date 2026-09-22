@@ -1,4 +1,4 @@
-package com.felipysantsss.telegram_amara_bot.utils;
+package com.felipysantsss.telegram_amara_bot.Utils;
 
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;

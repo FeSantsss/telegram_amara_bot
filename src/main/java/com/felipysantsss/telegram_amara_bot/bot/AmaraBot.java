@@ -1,8 +1,8 @@
 package com.felipysantsss.telegram_amara_bot.bot;
 
 import com.felipysantsss.telegram_amara_bot.Utils.MessageSender;
+import com.felipysantsss.telegram_amara_bot.Utils.PhotoSender;
 import com.felipysantsss.telegram_amara_bot.texts.Plans;
-import com.felipysantsss.telegram_amara_bot.utils.PhotoSender;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -124,20 +124,6 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
                 }
             }
         }
-
-
-        if (update.hasCallbackQuery()){
-            if ("7dias_plan".equals(update.getCallbackQuery().getData())){
-                SendMessage message = new SendMessage(update.getCallbackQuery().getFrom().getId().toString(), "oi, teste gostoso");
-                try {
-                    telegramClient.execute(message);
-                } catch (TelegramApiException e){
-                    System.out.println(e.getMessage());
-                }
-            }
-        }
-
-
     }
 
     // transforma o cliente do telegram com base no token do bot
