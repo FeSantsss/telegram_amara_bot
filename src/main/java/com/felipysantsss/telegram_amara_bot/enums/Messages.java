@@ -1,4 +1,4 @@
-package com.felipysantsss.telegram_amara_bot.texts;
+package com.felipysantsss.telegram_amara_bot.enums;
 
 public enum Messages {
     START_MESSAGE("Oii... cuidado pra não se perder aqui comigo \uD83D\uDE08\n" +

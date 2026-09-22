@@ -1,8 +1,13 @@
 package com.felipysantsss.telegram_amara_bot.bot;
 
+import com.felipysantsss.telegram_amara_bot.Utils.ImageGenerate;
+import com.felipysantsss.telegram_amara_bot.Utils.StringToMediaConverter;
+import com.felipysantsss.telegram_amara_bot.enums.WelcomeImages;
+import com.felipysantsss.telegram_amara_bot.services.BucketR2Client;
+import com.felipysantsss.telegram_amara_bot.Utils.MediaSender;
 import com.felipysantsss.telegram_amara_bot.Utils.MessageSender;
-import com.felipysantsss.telegram_amara_bot.Utils.PhotoSender;
-import com.felipysantsss.telegram_amara_bot.texts.Plans;
+import com.felipysantsss.telegram_amara_bot.enums.Messages;
+import com.felipysantsss.telegram_amara_bot.enums.Plans;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -13,19 +18,24 @@ import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateC
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.media.InputMedia;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import com.felipysantsss.telegram_amara_bot.texts.Messages;
-
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
+    // injeção do bean do BucketR2Client via construtor
+    private final BucketR2Client r2Client;
+
+    public AmaraBot(BucketR2Client r2Client){
+        this.r2Client = r2Client;
+    }
 
     // pega o token do bot nas variaveis de ambiente
     @Value("${telegram.bot.token}")
@@ -83,10 +93,13 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
                 SendMessage messageInit = new SendMessage(chatId, firstMessage);
                 // coloca os botões na mensagem
                 messageInit.setReplyMarkup(keyboardMarkup);
+
+                List<String> listImagesUrls = ImageGenerate.generateImages(r2Client, WelcomeImages.WELCOME_IMAGES.getImages());
+
+                List<InputMedia> mediaList = StringToMediaConverter.convertStringToMediaList(listImagesUrls);
+
                 try {
-                    PhotoSender.sendImage(chatId, "https://pub-29c79b56b9f44c2a80b005bc022bef94.r2.dev/amara/amara-profile2.jpeg", telegramClient);
-                    PhotoSender.sendImage(chatId, "https://pub-29c79b56b9f44c2a80b005bc022bef94.r2.dev/amara/amara-profile.jpeg", telegramClient);
-                    PhotoSender.sendImage(chatId, "https://pub-29c79b56b9f44c2a80b005bc022bef94.r2.dev/amara/amara-banner.jpeg", telegramClient);
+                    MediaSender.sender(chatId, mediaList, telegramClient);
                     // envia a mensagem com os botões
                     telegramClient.execute(messageInit);
                 } catch (TelegramApiException e){
@@ -110,13 +123,13 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
             String textVip = "teste do VIP";
 
             switch (update.getCallbackQuery().getData()){
-                case "7days_plan" -> {
+                case "5days_plan" -> {
                     MessageSender.MessageSender(chatId, textInteressado, telegramClient);
                 }
-                case "30days_safado_plan" -> {
+                case "20days_safado_plan" -> {
                     MessageSender.MessageSender(chatId, textSafado, telegramClient);
                 }
-                case "45days_vip_plan" -> {
+                case "30days_vip_plan" -> {
                     MessageSender.MessageSender(chatId, textVip, telegramClient);
                 }
                 default -> {

@@ -1,6 +1,24 @@
 spring:
   application:
     name: telegram_amara_bot
-  telegram:
+  config:
+    import: "optional:file:.env[.properties]"
+  datasource:
+    url: ${SUPABASE_DB_HOST}
+    username: ${SUPABASE_DB_USER}
+    password: ${SUPABASE_DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+telegram:
     bot:
       token: ${TELEGRAM_BOT_TOKEN}
+
+cloudflare:
+  r2:
+    endpoint: ${R2_ENDPOINT}
+    access-key: ${ACCESS_R2_KEY}
+    secret-key: ${PRIVATE_R2_KEY}
+    bucket-name: ${R2_NAME}
