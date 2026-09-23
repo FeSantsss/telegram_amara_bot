@@ -1,13 +1,15 @@
 package com.felipysantsss.telegram_amara_bot.bot;
 
 import com.felipysantsss.telegram_amara_bot.Utils.ImageGenerate;
-import com.felipysantsss.telegram_amara_bot.Utils.StringToMediaConverter;
-import com.felipysantsss.telegram_amara_bot.enums.WelcomeImages;
-import com.felipysantsss.telegram_amara_bot.services.BucketR2Client;
 import com.felipysantsss.telegram_amara_bot.Utils.MediaSender;
-import com.felipysantsss.telegram_amara_bot.Utils.MessageSender;
+import com.felipysantsss.telegram_amara_bot.Utils.StringToMediaConverter;
 import com.felipysantsss.telegram_amara_bot.enums.Messages;
 import com.felipysantsss.telegram_amara_bot.enums.Plans;
+import com.felipysantsss.telegram_amara_bot.enums.UserStatus;
+import com.felipysantsss.telegram_amara_bot.enums.WelcomeImages;
+import com.felipysantsss.telegram_amara_bot.model.User;
+import com.felipysantsss.telegram_amara_bot.repository.UserRepository;
+import com.felipysantsss.telegram_amara_bot.services.BucketR2Client;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -30,12 +32,22 @@ import java.util.List;
 
 @Component
 public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
-    // injeção do bean do BucketR2Client via construtor
-    private final BucketR2Client r2Client;
+    // ----------------------------------------------------------
 
-    public AmaraBot(BucketR2Client r2Client){
+    // injeção do UserRepository e do r2 client
+
+    private final BucketR2Client r2Client;
+    private final UserRepository userRepository;
+
+
+    public AmaraBot(BucketR2Client r2Client, UserRepository userRepository){
         this.r2Client = r2Client;
+        this.userRepository = userRepository;
     }
+
+    // ----------------------------------------------------------
+
+
 
     // pega o token do bot nas variaveis de ambiente
     @Value("${telegram.bot.token}")
@@ -89,6 +101,21 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
             // verifica se a mensagem é "/start"
             if ("/start".equals(update.getMessage().getText())){
                 String chatId = update.getMessage().getChat().getId().toString();
+                String userName = update.getMessage().getFrom().getFirstName();
+
+                User newUser = new User();
+                newUser.setChatId(chatId);
+                newUser.setUserName(userName);
+                newUser.setUserStatus(UserStatus.INACTIVE);
+
+
+                if (userRepository.findByChatId(chatId).isEmpty()){
+                    userRepository.save(newUser);
+                    System.out.println("o usuario foi criado com éxito");
+                } else {
+                    System.out.println("o usuario já existe");
+                }
+
                 // Cria o objeto SendMessage que pega o Id do chat e a Mensagem que será enviada
                 SendMessage messageInit = new SendMessage(chatId, firstMessage);
                 // coloca os botões na mensagem
@@ -109,33 +136,13 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
         }
         if (update.hasCallbackQuery()){
             String chatId = update.getCallbackQuery().getFrom().getId().toString();
-
             AnswerCallbackQuery response =  new AnswerCallbackQuery(update.getCallbackQuery().getId());
-
             try {
                 telegramClient.execute(response);
             } catch (TelegramApiException e){
                 System.out.println(e.getMessage());
             }
 
-            String textInteressado = "teste do INTERESSADO";
-            String textSafado = "teste do SAFADO";
-            String textVip = "teste do VIP";
-
-            switch (update.getCallbackQuery().getData()){
-                case "5days_plan" -> {
-                    MessageSender.MessageSender(chatId, textInteressado, telegramClient);
-                }
-                case "20days_safado_plan" -> {
-                    MessageSender.MessageSender(chatId, textSafado, telegramClient);
-                }
-                case "30days_vip_plan" -> {
-                    MessageSender.MessageSender(chatId, textVip, telegramClient);
-                }
-                default -> {
-                    System.out.println("Enter a valid value!");
-                }
-            }
         }
     }
 
