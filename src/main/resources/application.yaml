@@ -22,3 +22,6 @@ cloudflare:
     access-key: ${ACCESS_R2_KEY}
     secret-key: ${PRIVATE_R2_KEY}
     bucket-name: ${R2_NAME}
+
+mercadopago:
+  access-token: ${ACCESS_MERCADOPAGO_KEY_TEST}
