@@ -1,9 +1,6 @@
 package com.felipysantsss.telegram_amara_bot.bot;
 
-import com.felipysantsss.telegram_amara_bot.Utils.CreatePayment;
-import com.felipysantsss.telegram_amara_bot.Utils.ImageGenerate;
-import com.felipysantsss.telegram_amara_bot.Utils.MediaSender;
-import com.felipysantsss.telegram_amara_bot.Utils.StringToMediaConverter;
+import com.felipysantsss.telegram_amara_bot.Utils.*;
 import com.felipysantsss.telegram_amara_bot.enums.Messages;
 import com.felipysantsss.telegram_amara_bot.enums.Plans;
 import com.felipysantsss.telegram_amara_bot.enums.UserStatus;
@@ -146,6 +143,8 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
                 System.out.println(e.getMessage());
             }
 
+            String chosenPlanCallBack = update.getCallbackQuery().getData();
+            ChosenPlan.chosenPlan(chatId, telegramClient, chosenPlanCallBack, userRepository);
         }
     }
 
