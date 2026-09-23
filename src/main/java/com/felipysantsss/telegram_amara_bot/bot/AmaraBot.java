@@ -1,5 +1,6 @@
 package com.felipysantsss.telegram_amara_bot.bot;
 
+import com.felipysantsss.telegram_amara_bot.Utils.CreatePayment;
 import com.felipysantsss.telegram_amara_bot.Utils.ImageGenerate;
 import com.felipysantsss.telegram_amara_bot.Utils.MediaSender;
 import com.felipysantsss.telegram_amara_bot.Utils.StringToMediaConverter;
@@ -10,6 +11,8 @@ import com.felipysantsss.telegram_amara_bot.enums.WelcomeImages;
 import com.felipysantsss.telegram_amara_bot.model.User;
 import com.felipysantsss.telegram_amara_bot.repository.UserRepository;
 import com.felipysantsss.telegram_amara_bot.services.BucketR2Client;
+import com.mercadopago.exceptions.MPApiException;
+import com.mercadopago.exceptions.MPException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
