@@ -136,6 +136,19 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
         }
         if (update.hasCallbackQuery()){
             String chatId = update.getCallbackQuery().getFrom().getId().toString();
+            String alreadyHaveAPlan =
+                    "Você já possui um plano ou está em processo de pagamento, querido!\n" +
+                    "Cancele a escolha do plano abaixo (caso ainda não tenha pago) ou espere até a expiração do seu plano, para poder escolher outro.";
+
+            InlineKeyboardButton cancelButton = InlineKeyboardButton.builder()
+                    .text("Cancelar escolha de plano")
+                    .callbackData("cancel_chosen_plain")
+                    .build();
+
+            InlineKeyboardRow row = new InlineKeyboardRow(List.of(cancelButton));
+
+            InlineKeyboardMarkup markup = new InlineKeyboardMarkup(List.of(row));
+
             AnswerCallbackQuery response =  new AnswerCallbackQuery(update.getCallbackQuery().getId());
             try {
                 telegramClient.execute(response);
@@ -143,8 +156,33 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
                 System.out.println(e.getMessage());
             }
 
-            String chosenPlanCallBack = update.getCallbackQuery().getData();
-            ChosenPlan.chosenPlan(chatId, telegramClient, chosenPlanCallBack, userRepository);
+            if (
+                    userRepository.findByChatId(chatId).get().getUserStatus().equals(UserStatus.WAITING_PAYMENT) ||
+                    userRepository.findByChatId(chatId).get().getUserStatus().equals(UserStatus.PROCESSING_PAYMENT) ||
+                    userRepository.findByChatId(chatId).get().getUserStatus().equals(UserStatus.ACTIVE)
+            ){
+                try {
+                    SendMessage message = new SendMessage(chatId, alreadyHaveAPlan);
+                    message.setReplyMarkup(markup);
+
+                    telegramClient.execute(message);
+
+                }catch (TelegramApiException e){
+                    System.out.println(e.getMessage());
+                }
+            } else {
+                String chosenPlanCallBack = update.getCallbackQuery().getData();
+                ChosenPlan.chosenPlan(chatId, telegramClient, chosenPlanCallBack, userRepository);
+            }
+
+            if ("cancel_chosen_plain".equals(update.getCallbackQuery().getData())
+                    && userRepository.findByChatId(chatId).get().getUserStatus().equals(UserStatus.WAITING_PAYMENT)){
+                User client = userRepository.findByChatId(chatId).get();
+                client.setUserStatus(UserStatus.INACTIVE);
+                userRepository.save(client);
+                MessageSender.MessageSender(chatId, "Pronto! Pode digitar: /start e escolher outro plano, querido \uD83E\uDEE6", telegramClient);
+            }
+
         }
     }
 

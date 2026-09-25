@@ -7,6 +7,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/webhook")
 public class MercadoPagoWebhookController {
 
+    @GetMapping("/mercadopago")
+    @ResponseStatus(HttpStatus.OK)
+    public void healthCheck() {
+    }
+
     @PostMapping("/mercadopago")
     @ResponseStatus(HttpStatus.OK)
     public void receiveNotification(@RequestBody String body){
