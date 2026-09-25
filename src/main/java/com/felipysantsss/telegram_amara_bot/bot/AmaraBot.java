@@ -156,6 +156,15 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
                 System.out.println(e.getMessage());
             }
 
+            if ("cancel_chosen_plain".equals(update.getCallbackQuery().getData())
+                    && userRepository.findByChatId(chatId).get().getUserStatus().equals(UserStatus.WAITING_PAYMENT)){
+                User client = userRepository.findByChatId(chatId).get();
+                client.setUserStatus(UserStatus.INACTIVE);
+                client.setOrderId(null);
+                userRepository.save(client);
+                MessageSender.MessageSender(chatId, "Pronto! Pode digitar: /start e escolher outro plano, querido \uD83E\uDEE6", telegramClient);
+            }
+
             if (
                     userRepository.findByChatId(chatId).get().getUserStatus().equals(UserStatus.WAITING_PAYMENT) ||
                     userRepository.findByChatId(chatId).get().getUserStatus().equals(UserStatus.PROCESSING_PAYMENT) ||
@@ -175,13 +184,6 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
                 ChosenPlan.chosenPlan(chatId, telegramClient, chosenPlanCallBack, userRepository);
             }
 
-            if ("cancel_chosen_plain".equals(update.getCallbackQuery().getData())
-                    && userRepository.findByChatId(chatId).get().getUserStatus().equals(UserStatus.WAITING_PAYMENT)){
-                User client = userRepository.findByChatId(chatId).get();
-                client.setUserStatus(UserStatus.INACTIVE);
-                userRepository.save(client);
-                MessageSender.MessageSender(chatId, "Pronto! Pode digitar: /start e escolher outro plano, querido \uD83E\uDEE6", telegramClient);
-            }
 
         }
     }

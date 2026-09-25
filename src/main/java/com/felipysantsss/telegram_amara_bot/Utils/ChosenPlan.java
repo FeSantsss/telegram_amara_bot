@@ -14,8 +14,6 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import static com.felipysantsss.telegram_amara_bot.Utils.Base64ToQrCodeConverter.convertQrCode;
-
 public class ChosenPlan {
     public static void chosenPlan(
             @NonNull String chatId,
@@ -28,10 +26,12 @@ public class ChosenPlan {
             case "5days_plan" -> {
                 Plans plan = Plans.INTERESSADO_PLAN;
                 try{
+                    Order order = CreatePayment.paymentGenerator(plan, synthenticEmail, chatId);
                     User client = userRepository.findByChatId(chatId).get();
                     client.setUserStatus(UserStatus.WAITING_PAYMENT);
+                    client.setOrderId(order.getId());
                     userRepository.save(client);
-                    Order order = CreatePayment.paymentGenerator(plan, synthenticEmail, chatId);
+
 
                     String messageReplaced = Messages.CHOSING_PLAN.getText()
                                     .replace("{chosenPlan}", order.getDescription())
@@ -72,10 +72,11 @@ public class ChosenPlan {
             case "20days_safado_plan" -> {
                 Plans plan = Plans.SAFADO_PLAN;
                 try{
+                    Order order = CreatePayment.paymentGenerator(plan, synthenticEmail, chatId);
                     User client = userRepository.findByChatId(chatId).get();
                     client.setUserStatus(UserStatus.WAITING_PAYMENT);
+                    client.setOrderId(order.getId());
                     userRepository.save(client);
-                    Order order = CreatePayment.paymentGenerator(plan, synthenticEmail, chatId);
 
                     String messageReplaced = Messages.CHOSING_PLAN.getText()
                             .replace("{chosenPlan}", order.getDescription())
@@ -116,10 +117,11 @@ public class ChosenPlan {
             case "30days_vip_plan" -> {
                 Plans plan = Plans.VIP_PLAN;
                 try{
+                    Order order = CreatePayment.paymentGenerator(plan, synthenticEmail, chatId);
                     User client = userRepository.findByChatId(chatId).get();
                     client.setUserStatus(UserStatus.WAITING_PAYMENT);
+                    client.setOrderId(order.getId());
                     userRepository.save(client);
-                    Order order = CreatePayment.paymentGenerator(plan, synthenticEmail, chatId);
 
                     String messageReplaced = Messages.CHOSING_PLAN.getText()
                             .replace("{chosenPlan}", order.getDescription())
