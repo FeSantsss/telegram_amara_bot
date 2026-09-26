@@ -170,7 +170,9 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
                     MessageSender.MessageSender(chatId, "Pronto! Pode digitar: /start e escolher outro plano \uD83E\uDEE6", telegramClient);
                 } catch (MPApiException e){
                     System.out.println("ERROR: " + e.getApiResponse().getContent());
-                    MessageSender.MessageSender(chatId, "Não foi possível cancelar o seu pedido, meu bem! Se já foi pago, iremos disponibilizar o seu plano assim que verificarmos.", telegramClient);
+                    MessageSender.MessageSender(chatId,
+                            "Não foi possível cancelar o seu pedido, meu bem! Se já foi pago, iremos disponibilizar o seu plano assim que verificarmos.",
+                            telegramClient);
                 } catch (MPException e) {
                     System.out.println("ERROR: " + e.getMessage());
                     MessageSender.MessageSender(chatId, "Houve falha ao cancelar o seu pedido, meu amor! Tente novamente.", telegramClient);
