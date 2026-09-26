@@ -10,7 +10,7 @@ import com.mercadopago.resources.order.Order;
 import java.util.*;
 
 public class CreatePayment {
-    public static Order paymentGenerator(Plans chosenPlan, String syntheticEmail, String chatIdRef) throws MPException, MPApiException{
+    public static Order orderGenerator(Plans chosenPlan, String syntheticEmail, String chatIdRef) throws MPException, MPApiException{
         OrderClient client = new OrderClient();
 
         // cria o método de pagamento
@@ -60,4 +60,5 @@ public class CreatePayment {
         Order order = client.create(request, requestOptions);
         return order;
     }
+
 }

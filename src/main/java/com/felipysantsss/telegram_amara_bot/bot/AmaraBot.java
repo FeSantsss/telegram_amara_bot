@@ -8,6 +8,7 @@ import com.felipysantsss.telegram_amara_bot.enums.WelcomeImages;
 import com.felipysantsss.telegram_amara_bot.model.User;
 import com.felipysantsss.telegram_amara_bot.repository.UserRepository;
 import com.felipysantsss.telegram_amara_bot.services.BucketR2Client;
+import com.mercadopago.client.order.OrderClient;
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
 import jakarta.annotation.PostConstruct;
@@ -159,10 +160,21 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
             if ("cancel_chosen_plain".equals(update.getCallbackQuery().getData())
                     && userRepository.findByChatId(chatId).get().getUserStatus().equals(UserStatus.WAITING_PAYMENT)){
                 User client = userRepository.findByChatId(chatId).get();
-                client.setUserStatus(UserStatus.INACTIVE);
-                client.setOrderId(null);
-                userRepository.save(client);
-                MessageSender.MessageSender(chatId, "Pronto! Pode digitar: /start e escolher outro plano, querido \uD83E\uDEE6", telegramClient);
+                try {
+                    new OrderClient().cancel(client.getOrderId());
+
+                    client.setUserStatus(UserStatus.INACTIVE);
+                    client.setOrderId(null);
+                    client.setUserPlan(null);
+                    userRepository.save(client);
+                    MessageSender.MessageSender(chatId, "Pronto! Pode digitar: /start e escolher outro plano \uD83E\uDEE6", telegramClient);
+                } catch (MPApiException e){
+                    System.out.println("ERROR: " + e.getApiResponse().getContent());
+                    MessageSender.MessageSender(chatId, "Não foi possível cancelar o seu pedido, meu bem! Se já foi pago, iremos disponibilizar o seu plano assim que verificarmos.", telegramClient);
+                } catch (MPException e) {
+                    System.out.println("ERROR: " + e.getMessage());
+                    MessageSender.MessageSender(chatId, "Houve falha ao cancelar o seu pedido, meu amor! Tente novamente.", telegramClient);
+                }
             }
 
             if (

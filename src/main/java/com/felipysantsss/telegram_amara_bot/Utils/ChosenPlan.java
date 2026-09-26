@@ -26,10 +26,11 @@ public class ChosenPlan {
             case "5days_plan" -> {
                 Plans plan = Plans.INTERESSADO_PLAN;
                 try{
-                    Order order = CreatePayment.paymentGenerator(plan, synthenticEmail, chatId);
+                    Order order = CreatePayment.orderGenerator(plan, synthenticEmail, chatId);
                     User client = userRepository.findByChatId(chatId).get();
                     client.setUserStatus(UserStatus.WAITING_PAYMENT);
                     client.setOrderId(order.getId());
+                    client.setUserPlan(plan);
                     userRepository.save(client);
 
 
@@ -72,10 +73,11 @@ public class ChosenPlan {
             case "20days_safado_plan" -> {
                 Plans plan = Plans.SAFADO_PLAN;
                 try{
-                    Order order = CreatePayment.paymentGenerator(plan, synthenticEmail, chatId);
+                    Order order = CreatePayment.orderGenerator(plan, synthenticEmail, chatId);
                     User client = userRepository.findByChatId(chatId).get();
                     client.setUserStatus(UserStatus.WAITING_PAYMENT);
                     client.setOrderId(order.getId());
+                    client.setUserPlan(plan);
                     userRepository.save(client);
 
                     String messageReplaced = Messages.CHOSING_PLAN.getText()
@@ -117,10 +119,11 @@ public class ChosenPlan {
             case "30days_vip_plan" -> {
                 Plans plan = Plans.VIP_PLAN;
                 try{
-                    Order order = CreatePayment.paymentGenerator(plan, synthenticEmail, chatId);
+                    Order order = CreatePayment.orderGenerator(plan, synthenticEmail, chatId);
                     User client = userRepository.findByChatId(chatId).get();
                     client.setUserStatus(UserStatus.WAITING_PAYMENT);
                     client.setOrderId(order.getId());
+                    client.setUserPlan(plan);
                     userRepository.save(client);
 
                     String messageReplaced = Messages.CHOSING_PLAN.getText()
