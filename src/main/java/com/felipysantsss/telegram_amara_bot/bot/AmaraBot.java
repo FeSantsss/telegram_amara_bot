@@ -1,8 +1,6 @@
 package com.felipysantsss.telegram_amara_bot.bot;
 
-import com.felipysantsss.telegram_amara_bot.Utils.ImageGenerate;
-import com.felipysantsss.telegram_amara_bot.Utils.MediaSender;
-import com.felipysantsss.telegram_amara_bot.Utils.StringToMediaConverter;
+import com.felipysantsss.telegram_amara_bot.Utils.*;
 import com.felipysantsss.telegram_amara_bot.enums.Messages;
 import com.felipysantsss.telegram_amara_bot.enums.Plans;
 import com.felipysantsss.telegram_amara_bot.enums.UserStatus;
@@ -10,6 +8,9 @@ import com.felipysantsss.telegram_amara_bot.enums.WelcomeImages;
 import com.felipysantsss.telegram_amara_bot.model.User;
 import com.felipysantsss.telegram_amara_bot.repository.UserRepository;
 import com.felipysantsss.telegram_amara_bot.services.BucketR2Client;
+import com.mercadopago.client.order.OrderClient;
+import com.mercadopago.exceptions.MPApiException;
+import com.mercadopago.exceptions.MPException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -136,12 +137,67 @@ public class AmaraBot implements SpringLongPollingBot, LongPollingSingleThreadUp
         }
         if (update.hasCallbackQuery()){
             String chatId = update.getCallbackQuery().getFrom().getId().toString();
+            String alreadyHaveAPlan =
+                    "Você já possui um plano ou está em processo de pagamento, querido!\n" +
+                    "Cancele a escolha do plano abaixo (caso ainda não tenha pago) ou espere até a expiração do seu plano, para poder escolher outro.";
+
+            InlineKeyboardButton cancelButton = InlineKeyboardButton.builder()
+                    .text("Cancelar escolha de plano")
+                    .callbackData("cancel_chosen_plain")
+                    .build();
+
+            InlineKeyboardRow row = new InlineKeyboardRow(List.of(cancelButton));
+
+            InlineKeyboardMarkup markup = new InlineKeyboardMarkup(List.of(row));
+
             AnswerCallbackQuery response =  new AnswerCallbackQuery(update.getCallbackQuery().getId());
             try {
                 telegramClient.execute(response);
             } catch (TelegramApiException e){
                 System.out.println(e.getMessage());
             }
+
+            if ("cancel_chosen_plain".equals(update.getCallbackQuery().getData())
+                    && userRepository.findByChatId(chatId).get().getUserStatus().equals(UserStatus.WAITING_PAYMENT)){
+                User client = userRepository.findByChatId(chatId).get();
+                try {
+                    new OrderClient().cancel(client.getOrderId());
+
+                    client.setUserStatus(UserStatus.INACTIVE);
+                    client.setOrderId(null);
+                    client.setUserPlan(null);
+                    userRepository.save(client);
+                    MessageSender.MessageSender(chatId, "Pronto! Pode digitar: /start e escolher outro plano \uD83E\uDEE6", telegramClient);
+                } catch (MPApiException e){
+                    System.out.println("ERROR: " + e.getApiResponse().getContent());
+                    MessageSender.MessageSender(chatId,
+                            "Não foi possível cancelar o seu pedido, meu bem! Se já foi pago, iremos disponibilizar o seu plano assim que verificarmos.",
+                            telegramClient);
+                } catch (MPException e) {
+                    System.out.println("ERROR: " + e.getMessage());
+                    MessageSender.MessageSender(chatId, "Houve falha ao cancelar o seu pedido, meu amor! Tente novamente.", telegramClient);
+                }
+            }
+
+            if (
+                    userRepository.findByChatId(chatId).get().getUserStatus().equals(UserStatus.WAITING_PAYMENT) ||
+                    userRepository.findByChatId(chatId).get().getUserStatus().equals(UserStatus.PROCESSING_PAYMENT) ||
+                    userRepository.findByChatId(chatId).get().getUserStatus().equals(UserStatus.ACTIVE)
+            ){
+                try {
+                    SendMessage message = new SendMessage(chatId, alreadyHaveAPlan);
+                    message.setReplyMarkup(markup);
+
+                    telegramClient.execute(message);
+
+                }catch (TelegramApiException e){
+                    System.out.println(e.getMessage());
+                }
+            } else {
+                String chosenPlanCallBack = update.getCallbackQuery().getData();
+                ChosenPlan.chosenPlan(chatId, telegramClient, chosenPlanCallBack, userRepository);
+            }
+
 
         }
     }

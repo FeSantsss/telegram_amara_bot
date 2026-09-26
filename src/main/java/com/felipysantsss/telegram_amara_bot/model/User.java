@@ -24,6 +24,8 @@ public class User {
     @Column(unique = true)
     private String chatId;
 
+    private String orderId;
+
     private String userName;
 
     @Enumerated(EnumType.STRING)
